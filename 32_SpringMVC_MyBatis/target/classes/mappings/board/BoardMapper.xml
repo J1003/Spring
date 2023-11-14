@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boardDAO">
+
+	<!-- select 태그 3개 속성 id, resultType, parameterType
+	id : 사용할 명칭(필수항목), 현재 매퍼파일에서 유일한 이름 사용
+	resultType : 조회 결과값 저장하기 위한 데이터 타입(1개 데이터에 대한 타입지정)
+	parameterType : 전달 받은 파라미터 데이터의 타입 지정(선택적)
+	-->
+	
+	<!-- DB에서 조회할 떄 참고 -->
+	<!-- SELECT * 
+		FROM BOARD
+		WHERE 1 = 1
+		//AND TITLE LIKE '%' || 'aaa' ||'%'
+		//AND CONTENT LIKE '%' || '내용' ||'%'
+		ORDER BY SEQ DESC
+		;
+	 -->
+	
+	<!-- SELECT -->
+	<!-- TITLE 리스트 -->
+	<select id="getBoardList_T" parameterType="string" resultType="board">
+		SELECT *
+		FROM BOARD
+		WHERE TITLE LIKE '%'|| #{searchKeyword} ||'%'
+		ORDER BY SEQ DESC
+	</select>
+	<!-- CONTENT 리스트 -->
+	<select id="getBoardList_C" parameterType="string" resultType="board">
+		SELECT *
+		FROM BOARD
+		WHERE CONTENT LIKE '%'|| #{searchKeyword} ||'%'
+		ORDER BY SEQ DESC
+	</select>
+	<!-- BoardList -->
+	<select id="getBoardList" parameterType="board" resultType="board">
+		SELECT *
+		FROM BOARD
+		WHERE 1 = 1
+		<if test='searchCondition == "TITLE" and searchKeyword != "" '>
+			AND TITLE LIKE '%'|| #{searchKeyword} ||'%'
+		</if>
+		<if test='searchCondition == "CONTENT" and searchKeyword != "" '>
+			AND CONTENT LIKE '%'|| #{searchKeyword} ||'%'
+		</if>
+		ORDER BY SEQ DESC
+	</select>
+	
+	<!-- BoardList Where -->
+	<select id="getBoardList_Where" parameterType="board" resultType="board">
+		SELECT * 
+		FROM BOARD
+		WHERE 1 = 1 
+		<!-- searchCondition이 타이틀이고 searchKeyword 값이 빈문자열이 아니면~~~ -->
+		<if test='searchCondition == "TITLE" and searchKeyword != ""'> 
+			AND TITLE LIKE '%' || #{searchKeyword} ||'%'
+		</if>	
+		<if test='searchCondition == "CONTENT" and searchKeyword != ""'>
+			AND CONTENT LIKE '%' || #{searchKeyword} ||'%'
+		</if>
+		ORDER BY SEQ DESC
+	</select>
+	
+	<!-- getBoard 게시글 하나 조회 -->
+	<select id="getBoard" parameterType="board" resultType="board">
+		SELECT * 
+		FROM BOARD 
+		WHERE SEQ = #{seq}
+	</select>
+	
+	
+	<!-- INSERT / UPDATE / DELETE -->
+	<insert id="insertBoard" parameterType="board">
+		INSERT INTO BOARD (SEQ, TITLE, WRITER, CONTENT) 
+		VALUES ((SELECT NVL(MAX(SEQ),0) + 1 FROM BOARD), #{title}, #{writer}, #{content})    
+	</insert>
+	
+	<update id="updateBoard" parameterType="board">
+		UPDATE BOARD
+		SET TITLE = #{title},
+			CONTENT = #{content}
+			WHERE SEQ = #{seq}
+	</update>
+	
+	<delete id="deleteBoard" parameterType="board">
+		DELETE FROM BOARD WHERE SEQ = #{seq}
+	</delete>
+	
+	
+</mapper>
